@@ -87,6 +87,8 @@
 			    }, {filter:"image",multiple:true,maximum:9,system:false}); //最多上传9张照片
 			   
 			}
+			
+			
 			$(function(){
 				$("#gcmc").val(gcmctext);
 				$("#gcmx").val(gcmxtext);
@@ -257,6 +259,7 @@
 					});	
 				}
 				
+				
 			});
 			
 			
@@ -281,13 +284,70 @@
 //					console.log(base64);
 					my_img[x] = base64;
 					img_sjc[x] = new Date().getTime();
-					console.log(x);
+//					console.log(x);
 					$(function(){
 						var img_li = "<img id='img"+x+"'  src='"+base64+"' style='margin-left: 2%;width: 30%;height: 20vw;'>";
 						$("#new").append(img_li);
+						$("#img"+x+"").click(function(){
+							var btnarray=[
+								{title:"更改图片"}
+							];
+							plus.nativeUI.actionSheet({
+								title:"操作",
+								cancel:"取消",
+								buttons:btnarray
+							},function(e){
+								switch(e.index){
+									case 0:
+										break;
+									case 1:
+//										console.log(e.index+','+x);
+										regallery(x);
+										break;
+								}
+							});
+						});
+						/**
+						 * 未上传图片更改
+						 */
+						function regallery(x){
+							plus.gallery.pick(function(path){
+//								console.log(path+','+x);
+								reappend(path,x);
+							},{filter:"image"});
+						}
+						function reappend(path,x){
+							console.log(x);
+							console.log(my_img[1]);
+							var img = new Image();
+							img.src = path; //系统相册点选相册路径
+							img.onload = function(){
+								var that = this;   //this指img这个对象
+								//生成比例
+								var w = that.width;
+									h = that.height;
+									scale = w/h;
+									w= 360||w;   //压缩图片
+									h = w/scale;
+								//生成画布 canvas
+								var canvas = document.createElement('canvas');
+								var ctx = canvas.getContext('2d');
+								canvas.setAttribute("width",w);
+								canvas.setAttribute("height",h);
+								ctx.drawImage(that,0,0,w,h); //绘制一幅图像
+								var base64 = canvas.toDataURL('image/jpeg',1||0.8);//将canvas获取的图片转化为base64编码的dataURL
+								
+								my_img[x] = base64;
+								document.getElementById("img"+x+"").src = base64
+							}
+						}
+						
 					})
 				}
 			}
+			
+			
+			
 			$(function(){
 				$("#upload").click(function(){
 					if(my_img[0]!=null&&img_sjc[0]!=null){
