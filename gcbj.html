@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<style type="text/css">
+	body, html{width: 100%;height: 100%;overflow: hidden;margin:0;font-family:"微软雅黑";}
+	#allmap{width: 100%;height: 95%;}
+	button{background: #007AFF;border-radius: 5px; }
+	a,button{}
+	</style>
+	<script src="js/jquery.min.js" type="text/javascript"></script>
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=LNiOcXG4q0sYMABn0GBrO3H4tZgweIO2"></script>
+	<title>工程标志</title>
+</head>
+<body>
+	<div id="allmap"></div>
+	<div id="foot">
+		<button onclick="callback">返回主界面</button>
+		<button onclick="save()" style="margin-left: 35%;" >保存</button>
+		<button onclick="remove_overlay()">清除标志点</button>
+	</div>
+</body>
+</html>
+<script src="js/url.js" type="text/javascript"></script>
+<script type="text/javascript">
+	key_num  = 0;
+	map_obj = new Object();
+	var url = location.search; //获取url中"?"符后的字串
+//	alert(url);
+	var urlstr = url.split("=");
+	var id =urlstr[1];
+//	alert(id);
+	//百度地图API功能
+	var map = new BMap.Map("allmap");    // 创建Map实例
+	$.ajax({
+			type:"post",
+			dataType:'json',
+			url:server+"gcbj.php",
+			data:{
+				flag:'gcfw',
+				id:id
+			},
+			timeout:10000,
+			async:true,
+			success:function(data){
+//				alert(data);
+//				var length = data.length;
+//				var point = [[data[0],data[1]],[data[2],data[3]]];
+//				var ptcenter = point.center;
+//				alert(ptcenter);
+				//设置地图范围
+				var bound = new BMap.Bounds(new BMap.Point(data[0],data[1]),new BMap.Point(data[2],data[3]));
+				var pt = bound.getCenter();	
+//				alert(pt);
+				map.centerAndZoom(pt, 15);  // 初始化地图,设置中心点坐标和地图级别
+//				map.getViewport(point);
+//				//添加地图类型控件
+				map.addControl(new BMap.MapTypeControl({
+					mapTypes:[
+			            BMAP_NORMAL_MAP,
+			            BMAP_HYBRID_MAP
+			        ]}));	  
+				map.setCurrentCity("深圳");          // 设置地图显示的城市 此项是必须设置的
+				
+				var top_left_control = new BMap.ScaleControl({anchor: BMAP_ANCHOR_TOP_LEFT});// 左上角，添加比例尺
+				var top_left_navigation = new BMap.NavigationControl();  //左上角，添加默认缩放平移控件
+				//var top_right_navigation = new BMap.NavigationControl({anchor: BMAP_ANCHOR_TOP_RIGHT, type: BMAP_NAVIGATION_CONTROL_SMALL}); //右上角，仅包含平移和缩放按钮
+				/*缩放控件type有四种类型:
+				BMAP_NAVIGATION_CONTROL_SMALL：仅包含平移和缩放按钮；BMAP_NAVIGATION_CONTROL_PAN:仅包含平移按钮；BMAP_NAVIGATION_CONTROL_ZOOM：仅包含缩放按钮*/
+				//添加控件
+				map.addControl(top_left_control);        
+				map.addControl(top_left_navigation);     
+//				map.addControl(top_right_navigation);    
+			},
+			error:function(){
+				alert('发生错误，请联系开发人员');
+			}
+		});
+	
+	function showInfo(e){
+		var point = new BMap.Point(e.point.lng,e.point.lat);
+		var marker = new BMap.Marker(point);
+		map.addOverlay(marker);
+		map_obj[key_num] = e.point.lng +","+e.point.lat;
+//		alert(map_obj[0]);
+		key_num++;
+	}
+	
+	function save(){
+		$.ajax({
+			type:"post",
+			dataType:'json',
+			url:server+"gcbj.php",
+			data:{
+				flag:'sign',
+				id:id,
+				map_data:map_obj
+			},
+			timeout:10000,
+			async:true,
+			success:function(data){
+//				alert(data);
+				if(data[0]=='success'){
+					alert('保存成功！');
+					window.location.href = 'bjxg.html?id='+id;
+				}
+			},
+			error:function(){
+				alert('发生错误，请联系开发人员');
+			}
+		});
+	}
+	
+	map.addEventListener("click", showInfo);
+	function remove_overlay(){
+		map_obj.length = 0;
+		key_num = 0;
+		map.clearOverlays();
+	}
+//	map.addEventListener("tilesloaded",function(){alert("地图加载完毕");});
+//	map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+</script>

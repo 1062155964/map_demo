@@ -1,0 +1,34 @@
+{
+	"demo.html": {
+		"refer": [
+			"gcbj.html",
+			"demo.html",
+			"project_list.html"
+		],
+		"resources": []
+	},
+	"gcbj.html": {
+		"refer": [
+			"bjxg.html"
+		],
+		"resources": []
+	},
+	"bjxg.html": {
+		"refer": [
+			"picture.html",
+			"project_list.html"
+		],
+		"resources": []
+	},
+	"project_list.html": {
+		"refer": [
+			"bjxg.html",
+			"demo.html"
+		]
+	},
+	"picture.html": {
+		"refer": [
+			"bjxg.html"
+		]
+	}
+}
