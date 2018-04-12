@@ -49,16 +49,29 @@
 			timeout:10000,
 			async:true,
 			success:function(data){
-				//设置地图范围
+				
 //				alert(data);
+				//定义标志小窗口
 				var opts = {
 	 			 	width : 200,     // 信息窗口宽度
 	  				height: 100,     // 信息窗口高度
 	  				title : "工程所属点" , // 信息窗口标题
 				}
-				var bound = new BMap.Bounds(new BMap.Point(data[0].swlng,data[0].swlat),new BMap.Point(data[0].nelng,data[0].nelat));
-				var pt = bound.getCenter();	
-				map.centerAndZoom(pt, 16);  // 初始化地图,设置中心点坐标和地图级别
+				//设置地图范围
+				var ptarray = [new BMap.Point(data[0].swlng,data[0].swlat),new BMap.Point(data[0].nelng,data[0].nelat)];
+				var v = map.getViewport(ptarray);			//根据提供的地理区域或坐标获得最佳的地图视野，返回的对象中包含center和zoom属性，分别表示地图的中心点和级别。
+				map.centerAndZoom(v.center, v.zoom);  // 初始化地图,设置中心点坐标和地图级别
+				//绘制工程区域矩形
+				var polygon = new BMap.Polygon([
+					new BMap.Point(data[0].swlng,data[0].swlat),
+					new BMap.Point(data[0].swlng,data[0].nelat), 	//矩形西北点
+					new BMap.Point(data[0].nelng,data[0].nelat),
+					new BMap.Point(data[0].nelng,data[0].swlat)		//矩形东南点
+				],{storkerColor:"blue",storkerWeight:1,strokerOpacity:0});
+				polygon.setFillColor("");
+				map.addOverlay(polygon);
+				bound = polygon.getBounds();
+				
 				for(i=1;i<data.length;i++){
 					//从数据库中找到该区域对应点
 					var point_1 = new BMap.Point(data[i].plng,data[i].plat);		
@@ -111,11 +124,16 @@
 	
 	function showInfo(e){
 		var point = new BMap.Point(e.point.lng,e.point.lat);
-		var marker = new BMap.Marker(point);
-		map.addOverlay(marker);
-		map_obj[key_num] = e.point.lng +","+e.point.lat;
-//		alert(map_obj[0]);
-		key_num++;
+		if(bound.containsPoint(point)){
+			var marker = new BMap.Marker(point);
+			map.addOverlay(marker);
+			map_obj[key_num] = e.point.lng +","+e.point.lat;
+	//		alert(map_obj[0]);
+			key_num++;
+		}else {
+			mui.alert('请将标志点放置在指定范围！')
+		}
+		
 	}
 	
 	function save(){
@@ -138,7 +156,7 @@
 					mui.alert('修改成功！');
 					location.reload();
 				}else{
-					mui.alert('请新增标价点再点击修改！');
+					mui.alert('请新增标志点再点击修改！');
 				}
 			},
 			error:function(){
@@ -150,6 +168,9 @@
 		noxg.style.background='#AAAAAA';
 		map.removeEventListener("click",showInfo);
 	}
+	/**
+	 * 返回工程列表
+	 */
 	function callback(){
 		window.location.href = "project_list.html";
 	}

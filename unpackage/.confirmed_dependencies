@@ -9,7 +9,8 @@
 	},
 	"gcbj.html": {
 		"refer": [
-			"bjxg.html"
+			"bjxg.html",
+			"project_list.html"
 		],
 		"resources": []
 	},

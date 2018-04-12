@@ -202,7 +202,8 @@
 			"gcbj.html": {
 				"resources": [],
 				"refer": [
-					"bjxg.html"
+					"bjxg.html",
+					"project_list.html"
 				],
 				"priority": 0
 			},
